@@ -1,4 +1,6 @@
 """A module for automatic test cases and writing test boilerplate
+
+TODO - Create tests
 """
 
 import re
@@ -130,6 +132,12 @@ def create_tests_from_test_cases(
 
     Copy the output to the module containing your unit tests.
 
+    To create a comment in your tests which is independent of a test case, create a dictionary with only a comment key:
+
+            {
+                'comment': 'This comment is independent of a test case (and will be included in the output)'
+            }
+
     This function will warn you in stdout and the clipboard text (as Python-commented text) if:
     - your code crashes,
     - tests fail,
@@ -164,18 +172,26 @@ def create_tests_from_test_cases(
     args_and_kwargs_already_used = []
 
     # Render the class name to be used when creating a test function for this case
-    function_name_in_upper_camel_case = ''.join([word[0:1].upper() + word[1:] for word in test_function_name.lower().split('_')])
+    function_name_in_upper_camel_case = ''.join([word[0:1].upper() + word[1:] for word in
+                                                 test_function_name.lower().split('_')])
 
     # Store output for copying to clipboard (if pyperclip installed)
-    output = f'class Test{function_name_in_upper_camel_case}(unittest.TestCase):\n'
+    output = f'class Test{function_name_in_upper_camel_case}(unittest.TestCase):\n\n'
     print (output)
 
     for test_case in test_cases:
         output_for_test_case = ''
 
         # Get metadata
-        description = test_case.get('description', 'Please write a description')
+        description = test_case.get('description')
         comment = test_case.get('comment')
+
+        if comment and not description:
+            # This is not a test, it's a comment to be reposted to the output
+            output_for_test_case = f'    # {comment}\n\n'
+            print (output_for_test_case)
+            output += output_for_test_case
+            continue
 
         # Get and check args
         args_rendered = ''
@@ -189,7 +205,8 @@ def create_tests_from_test_cases(
             # The args must be in an iterable
             args_as_strings = [str(arg) for arg in args]
             if number_of_args != len(args_as_strings):
-                output_for_test_case += (f'# !!! number_of_args == {number_of_args} but {len(args_as_strings)} args were provided !!!')
+                output_for_test_case += (f'# !!! number_of_args == {number_of_args} but {len(args_as_strings)} '
+                                         'args were provided !!!')
             args_rendered = ', '.join(args_as_strings)
 
         # Get kwargs
