@@ -1,6 +1,4 @@
 """A module for automatic test cases and writing test boilerplate
-
-TODO - Create tests
 """
 
 import re
@@ -262,7 +260,10 @@ def create_tests_from_test_cases(
                 output_for_test_case += f'        # {description}\n'
                 if comment:
                     output_for_test_case += f'        # {comment}\n'
-                output_for_test_case += f"        assert {code} == {result}\n\n\n"
+                if isinstance(result, str):
+                    output_for_test_case += f"        assert {code} == '{result}'\n\n\n"
+                else:
+                    output_for_test_case += f"        assert {code} == {result}\n\n\n"
             else:
                 # The result was NOT equal to the value to the 'expect' key in this test case
                 if expect_key_present:
